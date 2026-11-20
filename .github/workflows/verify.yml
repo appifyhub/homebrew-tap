@@ -1,0 +1,33 @@
+# https://docs.brew.sh/Manpage
+name: Verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  formulae:
+    name: Formula syntax and style
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Check formulae
+        shell: bash
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_ANALYTICS: "1"
+        run: |
+          shopt -s nullglob
+          formulae=(Formula/*.rb)
+          if [ "${#formulae[@]}" -eq 0 ]; then
+            echo "::notice::No formulae to validate."
+            exit 0
+          fi
+          brew style "${formulae[@]}"
